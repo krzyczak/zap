@@ -2,15 +2,30 @@
 pub enum Token {
     Assign,
     Plus,
+    Minus,
+    Asterisk,
+    ForwardSlash,
+    Bang,
+    LessThan,
+    GreaterThan,
+    Equal,
+    NotEqual,
+
     LParen,
     RParen,
     LBrace,
     RBrace,
+
     Comma,
     Semicolon,
 
     Let,
     Function,
+    If,
+    Else,
+    True,
+    False,
+    Return,
     Ident(String),
 
     Int(String),
@@ -43,7 +58,22 @@ impl Lexer {
         self.skip_whitespace();
 
         let token = match self.ch {
-            b'=' => Token::Assign,
+            b'!' => {
+                if self.peek() == b'=' {
+                    self.read_char();
+                    Token::NotEqual
+                } else {
+                    Token::Bang
+                }
+            },
+            b'=' => {
+                if self.peek() == b'=' {
+                    self.read_char();
+                    Token::Equal
+                } else {
+                    Token::Assign
+                }
+            },
             b'+' => Token::Plus,
             b'(' => Token::LParen,
             b')' => Token::RParen,
@@ -51,6 +81,11 @@ impl Lexer {
             b'}' => Token::RBrace,
             b',' => Token::Comma,
             b';' => Token::Semicolon,
+            b'-' => Token::Minus,
+            b'*' => Token::Asterisk,
+            b'/' => Token::ForwardSlash,
+            b'<' => Token::LessThan,
+            b'>' => Token::GreaterThan,
             b'0'..=b'9' => {
                 return Token::Int(self.read_int());
             },
@@ -58,6 +93,11 @@ impl Lexer {
                 return match self.read_ident().as_str() {
                     "let" => Token::Let,
                     "fn" => Token::Function,
+                    "if" => Token::If,
+                    "else" => Token::Else,
+                    "return" => Token::Return,
+                    "true" => Token::True,
+                    "false" => Token::False,
                     other => Token::Ident(other.to_string())
                 }
             },
@@ -84,6 +124,14 @@ impl Lexer {
     fn skip_whitespace(&mut self) {
         while self.ch.is_ascii_whitespace() {
             self.read_char();
+        }
+    }
+
+    fn peek(&self) -> u8 {
+        if self.read_position < self.input.len() {
+            self.input[self.read_position]
+        } else {
+            0
         }
     }
 
@@ -204,6 +252,43 @@ mod tests {
            Token::Ident("ten".to_string()),
            Token::RParen,
            Token::Semicolon,
+           Token::Bang,
+           Token::Minus,
+           Token::ForwardSlash,
+           Token::Asterisk,
+           Token::Int("5".into()),
+           Token::Semicolon,
+           Token::Int("5".into()),
+           Token::LessThan,
+           Token::Int("10".into()),
+           Token::GreaterThan,
+           Token::Int("5".into()),
+           Token::Semicolon,
+           Token::If,
+           Token::LParen,
+           Token::Int("5".into()),
+           Token::LessThan,
+           Token::Int("10".into()),
+           Token::RParen,
+           Token::LBrace,
+           Token::Return,
+           Token::True,
+           Token::Semicolon,
+           Token::RBrace,
+           Token::Else,
+           Token::LBrace,
+           Token::Return,
+           Token::False,
+           Token::Semicolon,
+           Token::RBrace,
+           Token::Int(10.to_string()),
+           Token::Equal,
+           Token::Int(10.to_string()),
+           Token::Semicolon,
+           Token::Int(10.to_string()),
+           Token::NotEqual,
+           Token::Int(9.to_string()),
+           Token::Semicolon,
            Token::Eof,
         ];
 
@@ -215,6 +300,17 @@ mod tests {
             };
 
             let result = add(five, ten);
+            !-/*5;
+            5 < 10 > 5;
+
+            if (5 < 10) {
+                return true;
+            } else {
+                return false;
+            }
+
+            10 == 10;
+            10 != 9;
         "#;
 
         let mut lexer = Lexer::new(input.into());
