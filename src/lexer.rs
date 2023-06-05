@@ -1,4 +1,25 @@
-struct Lexer {
+#[derive(Debug, PartialEq)]
+pub enum Token {
+    Assign,
+    Plus,
+    LParen,
+    RParen,
+    LBrace,
+    RBrace,
+    Comma,
+    Semicolon,
+
+    Let,
+    Function,
+    Ident(String),
+
+    Int(String),
+
+    Eof,
+    Illegal(String),
+}
+
+pub struct Lexer {
     input: Vec<u8>,
     position: usize,
     read_position: usize,
@@ -6,7 +27,7 @@ struct Lexer {
 }
 
 impl Lexer {
-    fn new(input: String) -> Lexer {
+    pub fn new(input: String) -> Lexer {
         let mut lexer = Lexer {
             input: input.into_bytes(),
             position: 0,
@@ -18,18 +39,7 @@ impl Lexer {
         lexer
     }
 
-    fn read_char(&mut self) {
-        if self.read_position >= self.input.len() {
-            self.ch = 0;
-        } else {
-            self.ch = self.input[self.read_position];
-        }
-
-        self.position = self.read_position;
-        self.read_position += 1;
-    }
-
-    fn next_token(&mut self) -> Token {
+    pub fn next_token(&mut self) -> Token {
         self.skip_whitespace();
 
         let token = match self.ch {
@@ -60,6 +70,17 @@ impl Lexer {
         token
     }
 
+    fn read_char(&mut self) {
+        if self.read_position >= self.input.len() {
+            self.ch = 0;
+        } else {
+            self.ch = self.input[self.read_position];
+        }
+
+        self.position = self.read_position;
+        self.read_position += 1;
+    }
+
     fn skip_whitespace(&mut self) {
         while self.ch.is_ascii_whitespace() {
             self.read_char();
@@ -85,28 +106,6 @@ impl Lexer {
 
         String::from_utf8_lossy(&self.input[start_pos..self.position]).to_string()
     }
-}
-
-#[allow(dead_code)]
-#[derive(Debug, PartialEq)]
-enum Token {
-    Assign,
-    Plus,
-    LParen,
-    RParen,
-    LBrace,
-    RBrace,
-    Comma,
-    Semicolon,
-
-    Let,
-    Function,
-    Ident(String),
-
-    Int(String),
-
-    Eof,
-    Illegal(String),
 }
 
 #[cfg(test)]
