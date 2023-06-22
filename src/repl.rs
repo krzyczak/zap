@@ -1,6 +1,6 @@
 use std::io::{self, Write};
 
-use zap::lexer::{Lexer, Token};
+use zap::{lexer::{Lexer, Token}, parser::Parser};
 
 const PROMPT: &str = ">> ";
 
@@ -14,14 +14,17 @@ pub fn start() {
         let mut input = String::new();
         io::stdin().read_line(&mut input).expect("Invalid input!");
 
-        let mut lexer = Lexer::new(input);
+        let lexer = Lexer::new(input);
+        let mut parser = Parser::new(lexer);
 
-        loop {
-            let token = lexer.next_token();
-            if token == Token::Eof {
-                break;
-            }
-            println!("{:?}", token);
-        }
+        parser.parse();
+
+        // loop {
+        //     let token = lexer.next_token();
+        //     if token == Token::Eof {
+        //         break;
+        //     }
+        //     println!("{:?}", token);
+        // }
     }
 }
