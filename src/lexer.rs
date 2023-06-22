@@ -34,6 +34,12 @@ pub enum Token {
     Illegal(String),
 }
 
+impl std::fmt::Display for Token {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
 pub struct Lexer {
     input: Vec<u8>,
     position: usize,
@@ -316,8 +322,7 @@ mod tests {
         let mut lexer = Lexer::new(input.into());
         for token in tokens_in_order {
             let lexer_token = lexer.next_token();
-            println!("Expected Token: {:?}, Lexer token: {:?}", token, lexer_token);
-            assert_eq!(token, lexer_token);
+            debug_assert_eq!(token, lexer_token);
         }
     }
 }
